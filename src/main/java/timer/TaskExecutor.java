@@ -3,20 +3,19 @@ package timer;
 import java.util.*;
 
 class TaskExecutor {
-    private Map<TaskTimer, Integer> runnableOperations;
+    private Map<TaskForTimer, Integer> runnableOperations;
 
-    void setRunnableOperations(Map<TaskTimer, Integer> runnableOperations) {
+    TaskExecutor(Map<TaskForTimer, Integer> runnableOperations){
         this.runnableOperations = runnableOperations;
     }
 
     synchronized void addOperation(Runnable operation, Date executionTime, int counter){
-        TaskTimer taskTimer = new TaskTimer(operation, executionTime, counter);
-        System.out.println(taskTimer.hashCode());
+        TaskForTimer taskTimer = new TaskForTimer(operation, executionTime, counter);
 
         if(runnableOperations.containsKey(taskTimer)){
             runnableOperations.put(taskTimer, runnableOperations.get(taskTimer) + 1);
         } else {
-            //System.out.println("put operation");
+            System.out.println("put operation");
             runnableOperations.put(taskTimer, 1);
         }
 
@@ -31,24 +30,23 @@ class TaskExecutor {
                     e.printStackTrace();
                 }
             }
-            List<TaskTimer> trash = new ArrayList<>();
+            List<TaskForTimer> trash = new ArrayList<>();
             long timeRange = 0;
 
         while(runnableOperations.size() > 0) {
-            Iterator<Map.Entry<TaskTimer, Integer>> itr = runnableOperations.entrySet().iterator();
+            Iterator<Map.Entry<TaskForTimer, Integer>> itr = runnableOperations.entrySet().iterator();
 
             try {
                 while (itr.hasNext()) {
-
-                    Map.Entry<TaskTimer, Integer> entry = itr.next();
+                    Map.Entry<TaskForTimer, Integer> entry = itr.next();
 
                     timeRange = entry.getKey().getExecutionTime().getTime() - new Date().getTime();
 
                     if (timeRange <= 0) {
                         for (int i = 0; i < entry.getValue(); i++) {
-                            Thread thread = new Thread(entry.getKey().getTask());
-                            thread.start();
-                            thread.join();
+                            if(entry.getKey().getTask() != null) {
+                                entry.getKey().getTask().run();
+                            }
                         }
 
                         trash.add(entry.getKey());
@@ -57,11 +55,9 @@ class TaskExecutor {
                     }
                 }
 
-                for (TaskTimer taskTimer : trash) {
+                for (TaskForTimer taskTimer : trash) {
                     runnableOperations.remove(taskTimer);
                 }
-
-                System.out.println(timeRange);
 
                 if(timeRange > 0) {
                     wait(timeRange);

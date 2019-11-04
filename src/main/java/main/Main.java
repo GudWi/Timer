@@ -3,14 +3,25 @@ package main;
 import timer.Timer;
 
 import java.util.Date;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
         Timer timer = new Timer();
         Date currentTime = new Date();
 
-        Runnable task = () -> System.out.println("task");
-        Runnable task0 = () -> System.out.println("task0");
+        Runnable task = () -> {System.out.println("task");
+
+        for(int i = 0; i < 10; i++){
+            System.out.println(1);}
+        };
+
+        Runnable task0 = () -> {
+            System.out.println("task0");
+            for(int i = 0; i < 10; i++){
+                System.out.println(2);
+        }};
+
         Runnable task1 = () -> System.out.println("task1");
         Runnable task2 = () -> System.out.println("task2");
         Runnable task3 = () -> System.out.println("task3");
@@ -18,12 +29,16 @@ public class Main {
         Runnable task5 = () -> System.out.println("task5");
         Runnable task6 = () -> System.out.println("task6");
 
-        timer.addOperation(task, currentTime);
-        timer.addOperation(task0, currentTime);
-        timer.addOperation(task2, new Date(currentTime.getTime() + 20000));
-        timer.addOperation(task1, new Date(currentTime.getTime() + 10000));
-        timer.addOperation(task4, new Date(currentTime.getTime() + 40000));
-        timer.addOperation(task3, new Date(currentTime.getTime() + 30000));
+        HashMap<Runnable, Date> operations = new HashMap<>();
+
+        operations.put(task, currentTime);
+        operations.put(task0, currentTime);
+        operations.put(task2, new Date(currentTime.getTime() + 20000));
+        operations.put(task1, new Date(currentTime.getTime() + 10000));
+        operations.put(task4, new Date(currentTime.getTime() + 40000));
+        operations.put(task3, new Date(currentTime.getTime() + 30000));
+
+        timer.addCollectionOfOperations(operations);
 
         Thread taskEx = new Thread(timer);
         taskEx.start();
@@ -34,7 +49,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        timer.addOperation(task5, new Date(currentTime.getTime() + 10000));
+        timer.addOperation(task5, new Date(new Date().getTime() + 10000));
 
         try {
             Thread.sleep(60000);
@@ -42,6 +57,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        timer.addOperation(task6, new Date(currentTime.getTime() + 60000));
+        timer.addOperation(task6, new Date(new Date().getTime() + 20000));
+        timer.close();
     }
 }
